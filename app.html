@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo Doña Carmen</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome para íconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Gris oscuro para resaltar el celular */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        /* Contenedor del Celular */
+        .mobile-frame {
+            width: 375px;
+            height: 812px;
+            background-color: white;
+            border-radius: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+            border: 12px solid #111827;
+        }
+
+        /* Muesca (Notch) */
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 30px;
+            background-color: #111827;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 100;
+        }
+
+        /* Animación del escáner láser */
+        .scanner-line {
+            width: 90%;
+            height: 3px;
+            background-color: #22c55e;
+            position: absolute;
+            left: 5%;
+            box-shadow: 0 0 15px #22c55e;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 10%; }
+            50% { top: 90%; }
+            100% { top: 10%; }
+        }
+
+        /* Animación de pulso para el micrófono */
+        .pulse-ring {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+            70% { transform: scale(1.2); box-shadow: 0 0 0 20px rgba(37, 99, 235, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+        }
+
+        /* Fondo de la cámara (Imagen genérica de estantes) */
+        .camera-bg {
+            background-image: url('https://images.unsplash.com/photo-1604719312566-8912e9227c6a?auto=format&fit=crop&w=800&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame">
+        <!-- Notch y Barra de Estado -->
+        <div class="notch"></div>
+        <div class="absolute top-2 w-full flex justify-between px-6 z-50 text-xs font-bold pointer-events-none text-gray-800" id="statusbar">
+            <span class="ml-2 mt-1">9:41</span>
+            <div class="flex space-x-1 mt-1 mr-2">
+                <i class="fas fa-signal"></i>
+                <i class="fas fa-wifi"></i>
+                <i class="fas fa-battery-full"></i>
+            </div>
+        </div>
+
+        <!-- Notificación Toast (Oculta por defecto) -->
+        <div id="toast" class="absolute bottom-24 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-3 rounded-full shadow-lg font-bold flex items-center z-50 transition-all duration-300 opacity-0 pointer-events-none translate-y-10">
+            <i class="fas fa-check-circle mr-2"></i> ¡Producto Guardado!
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 1: INICIO -->
+        <!-- ========================================== -->
+        <div id="screen-home" class="screen flex flex-col h-full bg-white px-6 pt-20 pb-8 animate-[fadeIn_0.3s_ease-in-out]">
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-900 leading-tight">Hola Doña Carmen</h1>
+                <p class="text-gray-500 text-lg mt-1 font-semibold">¿Qué hacemos hoy?</p>
+            </div>
+
+            <div class="flex flex-col space-y-5 mt-8 flex-grow">
+                <!-- Botón Escanear -->
+                <button onclick="navigate('screen-scanner')" class="bg-blue-600 hover:bg-blue-700 active:scale-95 transition-transform text-white rounded-[32px] py-10 flex flex-col items-center justify-center shadow-lg">
+                    <i class="fas fa-camera text-5xl mb-4"></i>
+                    <span class="text-xl font-bold text-center leading-snug">Escanear Nuevo<br>Producto</span>
+                </button>
+
+                <!-- Botón Voz -->
+                <button onclick="navigate('screen-voice')" class="bg-green-700 hover:bg-green-800 active:scale-95 transition-transform text-white rounded-[32px] py-10 flex flex-col items-center justify-center shadow-lg">
+                    <i class="fas fa-microphone text-5xl mb-4"></i>
+                    <span class="text-xl font-bold text-center">Anotar con Voz</span>
+                </button>
+            </div>
+
+            <!-- Botón Avisos -->
+            <button onclick="navigate('screen-alert')" class="mt-auto bg-gray-50 border-2 border-gray-100 rounded-2xl py-4 px-6 flex items-center justify-between active:scale-95 transition-transform">
+                <div class="flex items-center">
+                    <i class="far fa-bell text-xl text-blue-600 mr-3"></i>
+                    <span class="text-lg font-bold text-gray-800">Buzón de Avisos</span>
+                </div>
+                <span class="bg-red-600 text-white text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center shadow-md">2</span>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 2: ESCÁNER -->
+        <!-- ========================================== -->
+        <div id="screen-scanner" class="screen hidden flex-col h-full bg-black relative animate-[fadeIn_0.3s_ease-in-out]">
+            <div class="absolute inset-0 camera-bg opacity-70"></div>
+            
+            <div class="absolute top-0 w-full h-40 bg-gradient-to-b from-black to-transparent z-10 pt-20 px-6">
+                <h2 class="text-white text-2xl font-bold text-center">Escanear producto</h2>
+                <p class="text-gray-200 text-sm text-center mt-2">Apunta la cámara al producto</p>
+            </div>
+
+            <div class="absolute inset-0 flex justify-center items-center z-10 pointer-events-none pb-20">
+                <div class="w-64 h-64 relative">
+                    <!-- Retícula -->
+                    <div class="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-white rounded-tl-3xl"></div>
+                    <div class="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-white rounded-tr-3xl"></div>
+                    <div class="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-white rounded-bl-3xl"></div>
+                    <div class="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-white rounded-br-3xl"></div>
+                    <!-- Láser -->
+                    <div class="scanner-line"></div>
+                </div>
+            </div>
+
+            <!-- Botones Inferiores -->
+            <div class="absolute bottom-0 w-full bg-white rounded-t-[40px] px-6 pt-8 pb-10 flex flex-col space-y-4 z-20">
+                <button onclick="showSuccessAndHome()" class="bg-green-700 active:scale-95 transition-transform text-white rounded-2xl py-5 text-xl font-bold w-full flex justify-center items-center shadow-md">
+                    <i class="fas fa-check mr-3"></i> Confirmar
+                </button>
+                <button onclick="navigate('screen-home')" class="bg-red-600 active:scale-95 transition-transform text-white rounded-2xl py-5 text-xl font-bold w-full flex justify-center items-center shadow-md">
+                    <i class="fas fa-times mr-3"></i> Cancelar
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 3: VOZ -->
+        <!-- ========================================== -->
+        <div id="screen-voice" class="screen hidden flex-col h-full bg-white px-6 pt-24 pb-10 animate-[fadeIn_0.3s_ease-in-out]">
+            <div class="text-center">
+                <h2 class="text-4xl font-extrabold text-gray-900 mb-2">Te escucho...</h2>
+                <p class="text-gray-500 text-lg font-medium">Habla con calma y claridad</p>
+            </div>
+
+            <div class="flex-grow flex flex-col justify-center items-center">
+                <div class="relative w-48 h-48 flex justify-center items-center mb-16">
+                    <div class="absolute inset-0 bg-blue-100 rounded-full pulse-ring"></div>
+                    <button class="relative z-10 bg-blue-600 text-white rounded-full w-32 h-32 flex justify-center items-center shadow-2xl">
+                        <i class="fas fa-microphone text-6xl"></i>
+                    </button>
+                </div>
+                
+                <div class="flex items-center text-red-600 text-base font-bold bg-red-50 px-4 py-2 rounded-full">
+                    <div class="w-3 h-3 rounded-full bg-red-600 mr-2 animate-pulse"></div>
+                    Grabando tu voz
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <button onclick="navigate('screen-home')" class="bg-red-600 active:scale-95 transition-transform text-white rounded-2xl py-5 text-xl font-bold w-full flex justify-center items-center shadow-md">
+                    <i class="fas fa-stop mr-3"></i> Detener
+                </button>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- PANTALLA 4: ALERTA -->
+        <!-- ========================================== -->
+        <div id="screen-alert" class="screen hidden flex-col h-full bg-red-600 px-6 pt-20 pb-10 animate-[fadeIn_0.3s_ease-in-out]">
+            <div>
+                <div class="flex items-center text-white/90 mb-2">
+                    <i class="fas fa-exclamation-triangle mr-2 text-xl"></i>
+                    <span class="text-lg font-bold tracking-wide uppercase">Aviso importante</span>
+                </div>
+            </div>
+
+            <div class="flex-grow flex flex-col justify-center">
+                <div class="bg-white rounded-[32px] p-8 shadow-2xl transform rotate-1 hover:rotate-0 transition-transform">
+                    <div class="flex items-center text-gray-800 mb-6">
+                        <i class="fas fa-volume-up text-3xl mr-4 text-gray-400"></i>
+                        <h3 class="text-3xl font-black text-gray-900 uppercase">¡Atención!</h3>
+                    </div>
+                    <p class="text-gray-900 text-[32px] font-black leading-tight">
+                        5 Yogures<br>vencen<br>MAÑANA
+                    </p>
+                </div>
+            </div>
+
+            <div class="mt-auto">
+                <button onclick="navigate('screen-home')" class="bg-white active:scale-95 transition-transform text-gray-900 rounded-2xl py-5 text-xl font-bold w-full flex justify-center items-center shadow-lg">
+                    <i class="fas fa-check mr-3"></i> Entendido
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script para controlar la navegación y botones -->
+    <script>
+        // Función principal para cambiar de pantallas
+        function navigate(targetScreenId) {
+            // 1. Obtener todas las pantallas y ocultarlas
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => {
+                screen.classList.add('hidden');
+                screen.classList.remove('flex');
+            });
+
+            // 2. Mostrar la pantalla objetivo
+            const targetScreen = document.getElementById(targetScreenId);
+            if (targetScreen) {
+                targetScreen.classList.remove('hidden');
+                targetScreen.classList.add('flex');
+            }
+
+            // 3. Cambiar color del texto de la barra de estado según el fondo de la pantalla
+            const statusbar = document.getElementById('statusbar');
+            if (targetScreenId === 'screen-scanner' || targetScreenId === 'screen-alert') {
+                statusbar.classList.replace('text-gray-800', 'text-white');
+            } else {
+                statusbar.classList.replace('text-white', 'text-gray-800');
+            }
+        }
+
+        // Función para mostrar el Toast de éxito y volver al inicio
+        function showSuccessAndHome() {
+            // Volver a inicio inmediatamente
+            navigate('screen-home');
+            
+            // Mostrar Toast (remover clases de oculto, añadir clases de visible)
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', 'translate-y-10');
+            toast.classList.add('opacity-100', 'translate-y-0');
+
+            // Ocultar Toast después de 2.5 segundos
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-10');
+            }, 2500);
+        }
+    </script>
+</body>
+</html>
